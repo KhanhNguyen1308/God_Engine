@@ -30,6 +30,9 @@ func _draw_radar(center: Vector2, radius: float) -> void:
 	draw_line(center + Vector2(-radius, 0), center + Vector2(radius, 0), radar_color * Color(1, 1, 1, 0.22), 1.0)
 	draw_line(center, center + Vector2(0, -radius), radar_color, 2.0)
 	draw_string(ThemeDB.fallback_font, center + Vector2(-radius, -radius - 8), "RADAR", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 13, radar_color)
+	draw_string(ThemeDB.fallback_font, center + Vector2(-8, -radius - 8), "FWD", HORIZONTAL_ALIGNMENT_CENTER, 28.0, 10, radar_color * Color(1, 1, 1, 0.68))
+	draw_string(ThemeDB.fallback_font, center + Vector2(-radius - 14, 4), "L", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 10, radar_color * Color(1, 1, 1, 0.55))
+	draw_string(ThemeDB.fallback_font, center + Vector2(radius + 8, 4), "R", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 10, radar_color * Color(1, 1, 1, 0.55))
 
 	var heading: float = float(telemetry.get("heading", 0.0))
 	for contact in contacts:
@@ -67,7 +70,9 @@ func _draw_sonar(origin: Vector2, area: Vector2) -> void:
 
 	var mode: String = "FOCUS" if telemetry.get("sonar_focus", false) else "PASSIVE"
 	draw_string(ThemeDB.fallback_font, origin + Vector2(0, -6), "SONAR " + mode, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 12, sonar_color)
+	draw_string(ThemeDB.fallback_font, origin + Vector2(0, area.y + 14), "L", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 11, sonar_color * Color(1, 1, 1, 0.55))
 	draw_string(ThemeDB.fallback_font, origin + Vector2(area.x * 0.47, area.y + 14), "FWD", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 11, sonar_color * Color(1, 1, 1, 0.65))
+	draw_string(ThemeDB.fallback_font, origin + Vector2(area.x - 8, area.y + 14), "R", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 11, sonar_color * Color(1, 1, 1, 0.55))
 
 func _draw_counter(origin: Vector2) -> void:
 	var reports: Array = telemetry.get("counter", [])

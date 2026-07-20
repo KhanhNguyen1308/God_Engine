@@ -284,19 +284,25 @@ func service_at_base(full_service := true) -> void:
 		heat = max(0.0, heat - 35.0)
 
 func get_telemetry() -> Dictionary:
+	var heading_bearing := _bearing_from_direction(-global_transform.basis.z)
+	var actual_azimuth := _display_azimuth(turret_yaw)
+	var desired_azimuth := _display_azimuth(desired_turret_yaw)
 	return {
 		"speed": Vector2(velocity.x, velocity.z).length(),
 		"energy": energy,
 		"ammo": ammo,
 		"charge": charge,
 		"elevation": barrel_elevation,
-		"azimuth": rad_to_deg(turret_yaw),
-		"desired_azimuth": rad_to_deg(desired_turret_yaw),
+		"azimuth": actual_azimuth,
+		"desired_azimuth": desired_azimuth,
 		"desired_elevation": desired_elevation,
 		"range_set": desired_range,
 		"arc_limit": main_traverse_limit,
 		"gun_aligned": abs(_angle_delta_rad(desired_turret_yaw, turret_yaw)) < deg_to_rad(1.2) and abs(desired_elevation - barrel_elevation) < 0.8,
-		"heading": rad_to_deg(rotation.y),
+		"heading": heading_bearing,
+		"hull_bearing": heading_bearing,
+		"actual_world_bearing": _wrap_degrees(heading_bearing + actual_azimuth),
+		"desired_world_bearing": _wrap_degrees(heading_bearing + desired_azimuth),
 		"stability": stability,
 		"deployed": deployed,
 		"view": "COCKPIT" if cockpit_view else "CHASE",
@@ -339,7 +345,7 @@ func _handle_aim(delta: float) -> void:
 	var yaw_input := Input.get_action_strength("aim_right") - Input.get_action_strength("aim_left")
 	var elevation_input := Input.get_action_strength("aim_up") - Input.get_action_strength("aim_down")
 	if abs(yaw_input) > 0.01:
-		desired_turret_yaw = clamp(desired_turret_yaw + yaw_input * delta * 0.85, deg_to_rad(-main_traverse_limit), deg_to_rad(main_traverse_limit))
+		desired_turret_yaw = clamp(desired_turret_yaw - yaw_input * delta * 0.85, deg_to_rad(-main_traverse_limit), deg_to_rad(main_traverse_limit))
 	if abs(elevation_input) > 0.01:
 		desired_elevation = clamp(desired_elevation + elevation_input * delta * 24.0, main_elevation_min, main_elevation_max)
 	turret_yaw = lerp_angle(turret_yaw, desired_turret_yaw, clamp(delta * 2.4 * weapon_factor, 0.0, 1.0))
@@ -360,6 +366,19 @@ func _elevation_for_range(range_meters: float, charge_level: int) -> float:
 
 func _angle_delta_rad(a: float, b: float) -> float:
 	return wrapf(a - b, -PI, PI)
+
+func _display_azimuth(raw_yaw: float) -> float:
+	# Godot positive Y yaw turns toward visual left; HUD positive azimuth is right.
+	return _wrap_degrees(-rad_to_deg(raw_yaw))
+
+func _bearing_from_direction(direction: Vector3) -> float:
+	var flat := Vector2(direction.x, direction.z)
+	if flat.length_squared() < 0.0001:
+		return 0.0
+	return _wrap_degrees(rad_to_deg(atan2(direction.x, -direction.z)))
+
+func _wrap_degrees(angle: float) -> float:
+	return wrapf(angle, -180.0, 180.0)
 
 
 func _update_recoil(delta: float) -> void:

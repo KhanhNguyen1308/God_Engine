@@ -25,15 +25,15 @@ Muc tieu: bien HUD prototype thanh HUD dieu khien Knight theo tinh than War Thun
 
 ## Dang co nhung chua dat chuan War Thunder
 
-- [ ] Radar/sonar moi la prototype: can test truc huong, label ro forward/left/right, khong duoc nguoc huong khi robot quay.
+- [x] Radar/sonar da co validation bearing co ban va label forward/left/right; van can test cam giac bang viewport khi playtest.
 - [ ] Reticle chua duoc calibrate theo dan dao that: range ladder hien chi la do hoa, chua gan chat voi drop/charge/flight time.
 - [ ] Lead scale chua dua tren van toc muc tieu va thoi gian bay cua dan.
 - [ ] Weapon strip chua tach tung hardpoint/vu khi; hien gan voi main gun va charge chung.
 - [ ] Module panel moi la outline don gian, chua co mau hu hong tung module nhu War Thunder.
 - [ ] Warning hien bang text nhieu hon icon/mau; can doi sang tin hieu goc man hinh/den canh bao.
-- [ ] HUD layout con dung toa do co dinh theo viewport, can anchor/responsive de khong lech tren man hinh khac.
+- [x] HUD layout da co tinh lai vi tri theo viewport cho module panel, weapon strip, message va sensor scope; van can polish tren nhieu do phan giai.
 - [ ] Chua co scope/zoom mode rieng nhu sniper sight hoac naval fire-control view.
-- [ ] Chua co top compass hien dong thoi huong than robot va huong thap phao.
+- [x] Da co top compass hien heading than robot, actual gun bearing, desired aim bearing va contact markers gan nhat.
 - [ ] Chua co minimap/objective/capture point layer.
 
 ## Chua co
@@ -56,11 +56,11 @@ Muc tieu: bien HUD prototype thanh HUD dieu khien Knight theo tinh than War Thun
 
 ### Phase 1 - Chinh xac dieu khien va huong HUD
 
-- [ ] Viet test/validation nho cho quy uoc bearing: 0 do = phia truoc robot, +90 = ben phai, -90 = ben trai.
-- [ ] Sua/kiem tra radar va sonar sau khi robot quay 0/90/180 do.
-- [ ] Them top compass: heading than robot, turret bearing, contact bearing, objective marker.
-- [ ] Doi reticle thanh 3 marker rieng: hull forward, desired aim, actual gun aim.
-- [ ] Hien arc gioi han hardpoint tren HUD bang cung trai/phai, doi mau khi chuot vuot gioi han.
+- [x] Viet test/validation nho cho quy uoc bearing: 0 do = phia truoc robot, +90 = ben phai, -90 = ben trai.
+- [x] Sua telemetry heading theo vector forward that cua robot va them nhan huong radar/sonar; can visual playtest them o 0/90/180 do.
+- [x] Them top compass: heading than robot, turret/actual gun bearing, desired aim bearing, contact bearing. Objective marker chua co.
+- [x] Doi reticle thanh 3 marker rieng: hull forward, desired aim, actual gun aim.
+- [x] Hien arc gioi han hardpoint tren HUD bang cung trai/phai, doi mau khi chuot vuot gioi han.
 
 ### Phase 2 - Fire-control War Thunder Naval
 
@@ -101,3 +101,11 @@ Muc tieu: bien HUD prototype thanh HUD dieu khien Knight theo tinh than War Thun
 - HUD co compass tren cung, reticle trung tam, weapon strip duoi, module status trai, sensor phai.
 - Range ladder va elevation phan anh dan dao that it nhat o 3 moc range: gan, trung, xa.
 - Khi ban xa, nguoi choi thay duoc shell bay/recoil/impact hoac splash marker de sua phat tiep theo.
+
+## Completed Phase 1 upgrade - 2026-07-20
+
+- [x] `KnightController.gd`: heading now comes from the real forward vector, display azimuth uses player-facing convention: right positive, left negative.
+- [x] `PrototypeHUD.gd`: added top compass, hull/actual/desired aim markers, clearer hardpoint arc, viewport-aware HUD placement.
+- [x] `SensorScope.gd`: added FWD/L/R labels to radar and sonar displays.
+- [x] `tests/smoke_test.gd`: added bearing convention validation.
+- [ ] Still needs visual playtest screenshot pass: confirm HUD readability and radar/sonar feel in an actual rendered viewport, not only headless.

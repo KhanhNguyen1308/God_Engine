@@ -17,6 +17,10 @@ func _run() -> void:
 	_check(player != null, "player spawned")
 	_check(scene.hud != null, "hud spawned")
 	_check(get_nodes_in_group("radar_contact").size() >= 3, "radar contacts spawned")
+	_check(abs(player._bearing_from_direction(Vector3(0.0, 0.0, -1.0))) < 0.1, "bearing forward is zero")
+	_check(abs(player._bearing_from_direction(Vector3(1.0, 0.0, 0.0)) - 90.0) < 0.1, "bearing right is positive")
+	_check(abs(player._bearing_from_direction(Vector3(-1.0, 0.0, 0.0)) + 90.0) < 0.1, "bearing left is negative")
+	_check(abs(abs(player._bearing_from_direction(Vector3(0.0, 0.0, 1.0))) - 180.0) < 0.1, "bearing rear is 180")
 
 	var start_ammo: int = player.ammo
 	var start_range: float = player.desired_range
