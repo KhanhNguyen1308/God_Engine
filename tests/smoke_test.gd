@@ -34,6 +34,9 @@ func _run() -> void:
 	sight_press.pressed = true
 	player._input(sight_press)
 	_check(player.gun_sight_active, "right mouse aim sight activates gun sight")
+	_check(player._gun_sight_camera.current, "gun sight uses dedicated sight camera")
+	_check(abs(player._gun_sight_camera.rotation.y - player.desired_turret_yaw) < 0.01, "gun sight camera follows desired yaw")
+	_check(abs(player._gun_sight_camera.rotation.x - deg_to_rad(player.desired_elevation)) < 0.01, "gun sight camera follows desired elevation")
 	var sight_release := InputEventAction.new()
 	sight_release.action = "aim_sight"
 	sight_release.pressed = false

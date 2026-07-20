@@ -60,6 +60,7 @@ var _turret: Node3D
 var _barrel: Node3D
 var _third_camera: Camera3D
 var _cockpit_camera: Camera3D
+var _gun_sight_camera: Camera3D
 var _damage_flash := 0.0
 var _barrel_rest_position := Vector3(0.0, 0.2, -1.9)
 var _barrel_recoil := 0.0
@@ -360,6 +361,7 @@ func _handle_aim(delta: float) -> void:
 	barrel_elevation = move_toward(barrel_elevation, desired_elevation, delta * 22.0 * weapon_factor)
 	_turret.rotation.y = turret_yaw
 	_barrel.rotation.x = deg_to_rad(barrel_elevation)
+	_update_gun_sight_camera()
 
 func _adjust_range(direction: int) -> void:
 	var step: float = range_step_coarse if Input.is_action_pressed("boost") else range_step_fine
@@ -440,12 +442,21 @@ func _emit_telemetry() -> void:
 	telemetry_changed.emit(get_telemetry())
 
 func _set_active_camera() -> void:
-	if not _third_camera or not _cockpit_camera:
+	if not _third_camera or not _cockpit_camera or not _gun_sight_camera:
 		return
 	_third_camera.current = not cockpit_view and not gun_sight_active
-	_cockpit_camera.current = cockpit_view or gun_sight_active
-	_cockpit_camera.fov = 34.0 if gun_sight_active else 62.0
+	_cockpit_camera.current = cockpit_view and not gun_sight_active
+	_gun_sight_camera.current = gun_sight_active
+	_cockpit_camera.fov = 62.0
+	_gun_sight_camera.fov = 32.0
 	_third_camera.fov = 58.0
+	_update_gun_sight_camera()
+
+func _update_gun_sight_camera() -> void:
+	if not _gun_sight_camera:
+		return
+	_gun_sight_camera.rotation.y = desired_turret_yaw
+	_gun_sight_camera.rotation.x = deg_to_rad(desired_elevation)
 
 func _build_visual() -> void:
 	_body_visual = Node3D.new()
@@ -487,6 +498,10 @@ func _build_visual() -> void:
 	_cockpit_camera.position = Vector3(0.0, 7.6, -1.2)
 	_cockpit_camera.rotation_degrees.x = -7.0
 	add_child(_cockpit_camera)
+
+	_gun_sight_camera = Camera3D.new()
+	_gun_sight_camera.position = Vector3(0.0, 8.25, -1.45)
+	add_child(_gun_sight_camera)
 
 func _box(size: Vector3, position: Vector3, color: Color) -> MeshInstance3D:
 	var mesh := MeshInstance3D.new()

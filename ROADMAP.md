@@ -69,6 +69,7 @@ Goal: prove the Light Scout Knight artillery loop before networking, progression
 
 ## HUD / Fire-Control Checklist
 
+- [x] Corrected poor aim implementation: mouse aim is now screen-center command, gun marker lags behind, and RMB uses a dedicated desired-aim gun sight camera instead of cockpit zoom.
 - [x] Fixed War Thunder-style aiming bug: HUD desired aim marker now moves both horizontally and vertically, RMB hold enters gun sight zoom, and smoke tests cover mouse vertical aim/sight toggle.
 - [x] Phase 1 HUD orientation upgrade: vector-based heading telemetry, War Thunder-style top compass, hull/desired/actual aim markers, hardpoint arc limit display, radar/sonar direction labels, and smoke-test bearing validation.
 - [x] Created `HUD_WARTHUNDER_CHECKLIST.md` from `warthunder_hud.md`: maps War Thunder Tank/Naval HUD ideas to current prototype, marks implemented/partial/missing items, and defines the next HUD improvement phases.

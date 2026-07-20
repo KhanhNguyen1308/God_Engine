@@ -116,3 +116,10 @@ Muc tieu: bien HUD prototype thanh HUD dieu khien Knight theo tinh than War Thun
 - [x] Added `aim_sight` input action on RMB, with hold-to-sight camera zoom.
 - [x] Added smoke-test regression for mouse vertical aim and sight activation/release.
 - [ ] Still needs human visual playtest: confirm the sight feels like War Thunder tank aiming at real framerate.
+
+## Completed aim model correction - 2026-07-20
+
+- [x] Replaced bad floating-aim HUD model with War Thunder-style mouse aim: screen center is commanded aim, gun marker lags behind.
+- [x] Replaced RMB cockpit zoom with a dedicated gun sight camera that follows desired yaw/elevation.
+- [x] Smoke test now asserts dedicated sight camera activation and desired yaw/elevation tracking.
+- [ ] Needs real viewport playtest for feel: camera pitch sign, sensitivity, and marker scale may still need tuning.
