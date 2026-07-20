@@ -130,3 +130,11 @@ Muc tieu: bien HUD prototype thanh HUD dieu khien Knight theo tinh than War Thun
 - [x] `GUN` marker now lags relative to the moving `AIM` reticle.
 - [x] Telemetry exposes `aim_screen_offset` and smoke test asserts it moves after mouse input.
 - [ ] Needs real viewport tuning: reticle box size, sensitivity, and whether RMB should recentre or keep offset.
+
+## Completed range-dial fire-control fix - 2026-07-20
+
+- [x] Q/E range dial now calls `_sync_elevation_to_range()` and changes `desired_elevation`.
+- [x] Charge changes now recompute the range/elevation solution.
+- [x] Projectile launch speed and range/elevation calculation now share `_muzzle_speed_for_charge()`.
+- [x] Smoke test asserts range dial increases desired elevation and visible barrel pitch follows barrel elevation.
+- [ ] Needs visual playtest: confirm elevation movement is obvious enough from chase and gun-sight views.

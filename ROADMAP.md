@@ -69,6 +69,7 @@ Goal: prove the Light Scout Knight artillery loop before networking, progression
 
 ## HUD / Fire-Control Checklist
 
+- [x] Fixed range dial fire-control: Q/E and charge changes now recompute desired elevation, barrel pitch follows the solution, and projectile speed matches the elevation calculation.
 - [x] Corrected aim reticle placement: `AIM` now moves on screen via `aim_screen_offset`, while `GUN` marker lags relative to that moving reticle.
 - [x] Corrected poor aim implementation: mouse aim is now screen-center command, gun marker lags behind, and RMB uses a dedicated desired-aim gun sight camera instead of cockpit zoom.
 - [x] Fixed War Thunder-style aiming bug: HUD desired aim marker now moves both horizontally and vertically, RMB hold enters gun sight zoom, and smoke tests cover mouse vertical aim/sight toggle.

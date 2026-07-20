@@ -75,6 +75,8 @@ func _ready() -> void:
 	add_to_group("player")
 	add_to_group("damageable")
 	_build_visual()
+	_sync_elevation_to_range()
+	barrel_elevation = desired_elevation
 	_set_active_camera()
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
@@ -98,8 +100,10 @@ func _input(event: InputEvent) -> void:
 		deployed = not deployed
 	if event.is_action_pressed("charge_up"):
 		charge = clampi(charge + 1, 1, 5)
+		_sync_elevation_to_range()
 	if event.is_action_pressed("charge_down"):
 		charge = clampi(charge - 1, 1, 5)
+		_sync_elevation_to_range()
 	if event.is_action_pressed("range_up"):
 		_adjust_range(1)
 	if event.is_action_pressed("range_down"):
@@ -143,7 +147,7 @@ func fire_main_gun() -> void:
 	var shell := ShellScene.new()
 	_shell_parent.add_child(shell)
 	var muzzle := _barrel.global_transform.origin + -_barrel.global_transform.basis.z * 6.5
-	var speed := 58.0 + float(charge) * 20.0
+	var speed := _muzzle_speed_for_charge(charge)
 	var direction := -_barrel.global_transform.basis.z.normalized()
 	var alignment_error: float = abs(_angle_delta_rad(desired_turret_yaw, turret_yaw))
 	var inaccuracy := (1.0 - stability) * (0.045 if deployed else 0.09) + alignment_error * 0.035
@@ -372,11 +376,22 @@ func _handle_aim(delta: float) -> void:
 func _adjust_range(direction: int) -> void:
 	var step: float = range_step_coarse if Input.is_action_pressed("boost") else range_step_fine
 	desired_range = clamp(desired_range + float(direction) * step, 100.0, 2200.0)
+	_sync_elevation_to_range()
+
+func _sync_elevation_to_range() -> void:
+	desired_elevation = _elevation_for_range(desired_range, charge)
+
+func _muzzle_speed_for_charge(charge_level: int) -> float:
+	return 115.0 + float(charge_level) * 36.0
 
 func _elevation_for_range(range_meters: float, charge_level: int) -> float:
-	var muzzle_speed: float = 58.0 + float(charge_level) * 20.0
+	var muzzle_speed: float = _muzzle_speed_for_charge(charge_level)
 	var shell_gravity: float = 24.0
-	var ratio: float = clamp(shell_gravity * range_meters / max(muzzle_speed * muzzle_speed, 1.0), -0.98, 0.98)
+	var ratio: float = shell_gravity * range_meters / max(muzzle_speed * muzzle_speed, 1.0)
+	if ratio >= 0.98:
+		return main_elevation_max
+	if ratio <= -0.98:
+		return main_elevation_min
 	var low_arc: float = 0.5 * asin(ratio)
 	return clamp(rad_to_deg(low_arc), main_elevation_min, main_elevation_max)
 

@@ -46,13 +46,19 @@ func _run() -> void:
 	_check(not player.gun_sight_active, "aim sight releases back to normal camera")
 
 	var start_ammo: int = player.ammo
+	player.desired_range = 500.0
+	player.charge = 3
+	player._sync_elevation_to_range()
+	player.barrel_elevation = player.desired_elevation
 	var start_range: float = player.desired_range
+	var ranged_elevation_start: float = player.desired_elevation
 	player._adjust_range(1)
 	_check(player.desired_range > start_range, "range adjust increases range set")
-	var start_elevation: float = player.desired_elevation
-	player.desired_elevation = start_elevation + 8.0
+	_check(player.desired_elevation > ranged_elevation_start, "range dial increases desired elevation")
+	var start_elevation: float = player.barrel_elevation
 	player._handle_aim(0.5)
-	_check(player.barrel_elevation > start_elevation, "weapon elevates toward desired aim")
+	_check(player.barrel_elevation > start_elevation, "weapon barrel elevates toward range dial solution")
+	_check(abs(player._barrel.rotation_degrees.x - player.barrel_elevation) < 0.1, "visible barrel pitch follows barrel elevation")
 	player.desired_turret_yaw = deg_to_rad(player.main_traverse_limit + 50.0)
 	player._handle_aim(0.1)
 	_check(abs(rad_to_deg(player.desired_turret_yaw)) <= player.main_traverse_limit, "hardpoint clamps desired aim")
