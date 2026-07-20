@@ -67,6 +67,10 @@ Goal: prove the Light Scout Knight artillery loop before networking, progression
 - [ ] Titan module damage and logistics burden.
 
 
+## HUD / Fire-Control Checklist
+
+- [x] Created `HUD_WARTHUNDER_CHECKLIST.md` from `warthunder_hud.md`: maps War Thunder Tank/Naval HUD ideas to current prototype, marks implemented/partial/missing items, and defines the next HUD improvement phases.
+
 ## Local Tooling
 
 - [x] Added Godot 4.6.3 Standard non-Mono under `tools/godot-4.6.3-standard/` because the pre-existing Mono build in `~/Downloads` requires missing `.NET`/hostfxr.
