@@ -29,7 +29,7 @@ func register_projectile_trajectory(start_position: Vector3, start_velocity: Vec
 	var flat := Vector2(start_velocity.x, start_velocity.z)
 	counter_battery_reports.append({
 		"origin": start_position,
-		"bearing": rad_to_deg(atan2(start_velocity.x, start_velocity.z)),
+		"bearing": rad_to_deg(atan2(start_velocity.x, -start_velocity.z)),
 		"speed": flat.length(),
 		"ttl": 9.0,
 	})
@@ -41,7 +41,7 @@ func get_counter_battery_reports(from_position: Vector3) -> Array:
 		var offset := origin - from_position
 		reports.append({
 			"range": Vector2(offset.x, offset.z).length(),
-			"bearing": rad_to_deg(atan2(offset.x, offset.z)),
+			"bearing": rad_to_deg(atan2(offset.x, -offset.z)),
 			"shell_bearing": report["bearing"],
 			"ttl": report["ttl"],
 		})

@@ -22,11 +22,20 @@ func _run() -> void:
 	var start_range: float = player.desired_range
 	player._adjust_range(1)
 	_check(player.desired_range > start_range, "range adjust increases range set")
+	var start_elevation: float = player.desired_elevation
+	player.desired_elevation = start_elevation + 8.0
+	player._handle_aim(0.5)
+	_check(player.barrel_elevation > start_elevation, "weapon elevates toward desired aim")
 	player.desired_turret_yaw = deg_to_rad(player.main_traverse_limit + 50.0)
 	player._handle_aim(0.1)
 	_check(abs(rad_to_deg(player.desired_turret_yaw)) <= player.main_traverse_limit, "hardpoint clamps desired aim")
 	player.pulse_radar(true)
 	_check(player.last_contacts.size() >= 3, "radar sees targets")
+	var static_bearing_ok := false
+	for contact in player.last_contacts:
+		if contact.get("name") == "Static Gun Battery":
+			static_bearing_ok = float(contact.get("bearing", 999.0)) > -90.0 and float(contact.get("bearing", 999.0)) < 90.0
+	_check(static_bearing_ok, "front-right radar contact uses forward bearing")
 	player.sonar_focus = false
 	player._update_sonar(0.1)
 	_check(player.last_sonar_contacts.size() >= 1, "sonar hears emitters")
@@ -34,9 +43,19 @@ func _run() -> void:
 	player.sonar_focus = true
 	player._update_sonar(1.0)
 	_check(player.sonar_error < passive_error, "sonar focus narrows bearing error")
+	var shells_before: int = 0
+	for child in scene.get_children():
+		if child is ArtilleryShell:
+			shells_before += 1
 	player.fire_main_gun()
 	_check(player.ammo == start_ammo - 1, "fire consumes ammo")
 	_check(player.heat > 0.0, "fire adds heat")
+	_check(player._barrel_recoil > 0.0, "fire triggers barrel recoil")
+	var shell_found := false
+	for child in scene.get_children():
+		if child is ArtilleryShell and child.velocity.y > 0.0:
+			shell_found = true
+	_check(shell_found, "fire spawns visible upward ballistic shell")
 
 	var enemy: Node = null
 	for node in get_nodes_in_group("radar_contact"):

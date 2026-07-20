@@ -29,6 +29,7 @@ var melee_cooldown := 0.0
 var turret_yaw := 0.0
 var barrel_elevation := 32.0
 var desired_turret_yaw := 0.0
+var desired_elevation := 32.0
 var desired_range := 650.0
 var range_step_fine := 50.0
 var range_step_coarse := 200.0
@@ -59,6 +60,8 @@ var _barrel: Node3D
 var _third_camera: Camera3D
 var _cockpit_camera: Camera3D
 var _damage_flash := 0.0
+var _barrel_rest_position := Vector3(0.0, 0.2, -1.9)
+var _barrel_recoil := 0.0
 
 func _ready() -> void:
 	energy = energy_max
@@ -69,12 +72,13 @@ func _ready() -> void:
 	add_to_group("damageable")
 	_build_visual()
 	_set_active_camera()
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		var motion := event as InputEventMouseMotion
 		desired_turret_yaw = clamp(desired_turret_yaw - motion.relative.x * aim_sensitivity, deg_to_rad(-main_traverse_limit), deg_to_rad(main_traverse_limit))
-		desired_range = clamp(desired_range - motion.relative.y * 2.5, 100.0, 2200.0)
+		desired_elevation = clamp(desired_elevation - motion.relative.y * aim_sensitivity * 9.0, main_elevation_min, main_elevation_max)
 	if event.is_action_pressed("toggle_view"):
 		cockpit_view = not cockpit_view
 		_set_active_camera()
@@ -107,6 +111,7 @@ func _physics_process(delta: float) -> void:
 	_update_stability(delta)
 	_update_melee(delta)
 	_update_damage_flash(delta)
+	_update_recoil(delta)
 	pulse_radar(false)
 	_update_sonar(delta)
 	_emit_telemetry()
@@ -134,6 +139,7 @@ func fire_main_gun() -> void:
 	shell.damage = 45.0 + float(charge) * 12.0
 	shell.blast_radius = 7.0 + float(charge) * 1.5
 	shell.launch(muzzle, direction * speed, self)
+	_barrel_recoil = 1.15
 
 	heat = min(110.0, heat + 9.0 + float(charge) * 5.5)
 	barrel_wear = min(100.0, barrel_wear + 0.35 + float(charge) * 0.2)
@@ -219,7 +225,7 @@ func pulse_radar(active_ping: bool) -> void:
 		var range := flat.length()
 		if range > 950.0:
 			continue
-		var bearing := rad_to_deg(atan2(offset.x, offset.z))
+		var bearing := rad_to_deg(atan2(offset.x, -offset.z))
 		var error := radar_error + range * 0.025
 		contacts.append({
 			"name": node.get("target_name") if node.get("target_name") != null else "Contact",
@@ -249,7 +255,7 @@ func _update_sonar(delta: float) -> void:
 		if strength <= 0.04:
 			continue
 		var offset: Vector3 = node.global_position - global_position
-		var bearing: float = rad_to_deg(atan2(offset.x, offset.z))
+		var bearing: float = rad_to_deg(atan2(offset.x, -offset.z))
 		var confidence: float = clamp(strength * (1.3 if sonar_focus else 0.85), 0.0, 1.0)
 		var bearing_error: float = sonar_error * (1.0 - confidence * 0.65)
 		contacts.append({
@@ -286,9 +292,10 @@ func get_telemetry() -> Dictionary:
 		"elevation": barrel_elevation,
 		"azimuth": rad_to_deg(turret_yaw),
 		"desired_azimuth": rad_to_deg(desired_turret_yaw),
+		"desired_elevation": desired_elevation,
 		"range_set": desired_range,
 		"arc_limit": main_traverse_limit,
-		"gun_aligned": abs(_angle_delta_rad(desired_turret_yaw, turret_yaw)) < deg_to_rad(1.2),
+		"gun_aligned": abs(_angle_delta_rad(desired_turret_yaw, turret_yaw)) < deg_to_rad(1.2) and abs(desired_elevation - barrel_elevation) < 0.8,
 		"heading": rad_to_deg(rotation.y),
 		"stability": stability,
 		"deployed": deployed,
@@ -327,19 +334,18 @@ func _handle_movement(delta: float) -> void:
 func _handle_aim(delta: float) -> void:
 	desired_turret_yaw = clamp(desired_turret_yaw, deg_to_rad(-main_traverse_limit), deg_to_rad(main_traverse_limit))
 	desired_range = clamp(desired_range, 100.0, 2200.0)
+	desired_elevation = clamp(desired_elevation, main_elevation_min, main_elevation_max)
 	var weapon_factor: float = clamp(module_state["weapon"], 0.2, 1.0)
 	var yaw_input := Input.get_action_strength("aim_right") - Input.get_action_strength("aim_left")
-	var range_input := Input.get_action_strength("aim_up") - Input.get_action_strength("aim_down")
+	var elevation_input := Input.get_action_strength("aim_up") - Input.get_action_strength("aim_down")
 	if abs(yaw_input) > 0.01:
 		desired_turret_yaw = clamp(desired_turret_yaw + yaw_input * delta * 0.85, deg_to_rad(-main_traverse_limit), deg_to_rad(main_traverse_limit))
-	if abs(range_input) > 0.01:
-		desired_range = clamp(desired_range + range_input * delta * 220.0, 100.0, 2200.0)
-	var desired_elevation := _elevation_for_range(desired_range, charge)
+	if abs(elevation_input) > 0.01:
+		desired_elevation = clamp(desired_elevation + elevation_input * delta * 24.0, main_elevation_min, main_elevation_max)
 	turret_yaw = lerp_angle(turret_yaw, desired_turret_yaw, clamp(delta * 2.4 * weapon_factor, 0.0, 1.0))
 	barrel_elevation = move_toward(barrel_elevation, desired_elevation, delta * 22.0 * weapon_factor)
 	_turret.rotation.y = turret_yaw
 	_barrel.rotation.x = deg_to_rad(barrel_elevation)
-
 
 func _adjust_range(direction: int) -> void:
 	var step: float = range_step_coarse if Input.is_action_pressed("boost") else range_step_fine
@@ -354,6 +360,12 @@ func _elevation_for_range(range_meters: float, charge_level: int) -> float:
 
 func _angle_delta_rad(a: float, b: float) -> float:
 	return wrapf(a - b, -PI, PI)
+
+
+func _update_recoil(delta: float) -> void:
+	_barrel_recoil = move_toward(_barrel_recoil, 0.0, delta * 4.8)
+	if _barrel:
+		_barrel.position = _barrel_rest_position + Vector3(0.0, 0.0, _barrel_recoil)
 
 func _update_energy(delta: float) -> void:
 	var shield_drain := 3.5 if shield_on else 0.0
@@ -425,7 +437,7 @@ func _build_visual() -> void:
 	_turret.add_child(_box(Vector3(3.5, 1.5, 3.0), Vector3.ZERO, Color(0.44, 0.33, 0.20)))
 
 	_barrel = Node3D.new()
-	_barrel.position = Vector3(0.0, 0.2, -1.9)
+	_barrel.position = _barrel_rest_position
 	_turret.add_child(_barrel)
 	_barrel.add_child(_box(Vector3(0.55, 0.55, 8.0), Vector3(0.0, 0.0, -4.0), Color(0.12, 0.11, 0.10)))
 

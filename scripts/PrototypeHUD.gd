@@ -92,7 +92,7 @@ func _draw_fire_control() -> void:
 	_draw_lead_scale(_fire_control, center + Vector2(0, 72), color, muted)
 	_draw_traverse_arc(_fire_control, center + Vector2(0, 122), arc_limit, desired_az, actual_az, color, warning)
 	_fire_control.draw_string(ThemeDB.fallback_font, center + Vector2(-68, -74), "RNG %04dm" % int(range_set), HORIZONTAL_ALIGNMENT_LEFT, -1, 20, color)
-	_fire_control.draw_string(ThemeDB.fallback_font, center + Vector2(-72, -48), "EL %.1f  AZ %.1f" % [float(telemetry.get("elevation", 0.0)), actual_az], HORIZONTAL_ALIGNMENT_LEFT, -1, 14, muted)
+	_fire_control.draw_string(ThemeDB.fallback_font, center + Vector2(-72, -48), "EL %.1f>%.1f  AZ %.1f" % [float(telemetry.get("elevation", 0.0)), float(telemetry.get("desired_elevation", 0.0)), actual_az], HORIZONTAL_ALIGNMENT_LEFT, -1, 14, muted)
 	if abs(desired_az) >= arc_limit - 1.5:
 		_fire_control.draw_string(ThemeDB.fallback_font, center + Vector2(-66, 154), "HARDPOINT LIMIT", HORIZONTAL_ALIGNMENT_LEFT, -1, 15, warning)
 

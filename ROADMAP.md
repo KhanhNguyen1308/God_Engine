@@ -46,6 +46,7 @@ Goal: prove the Light Scout Knight artillery loop before networking, progression
 - [x] Sonar/audio direction display.
 - [x] Add War Thunder Naval-inspired fire-control HUD with range ladder, traverse arc, weapon strip, module silhouette, and visual sensor scope.
 - [x] Add mouse desired-aim control with per-hardpoint traverse limits and range-set fire-control.
+- [x] Fix fire-control regressions: sensor bearing orientation, mouse-driven weapon elevation, barrel recoil feedback, and visible ballistic shell launch.
 - [x] Outpost logistics zone with limited repair/rearm.
 
 ## Prototype 3: PvP Foundation
