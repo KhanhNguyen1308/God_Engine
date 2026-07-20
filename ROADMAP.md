@@ -44,6 +44,7 @@ Goal: prove the Light Scout Knight artillery loop before networking, progression
 - [x] Projectile trajectory detection for counter-battery radar.
 - [x] Better recoil, heat, barrel wear, and misfire/jam states.
 - [x] Sonar/audio direction display.
+- [x] Replace text-heavy prototype readout with compact War Thunder-style HUD: HP/energy/heat bars, central reticle, fixed bottom-right radar/sonar scope.
 - [x] Outpost logistics zone with limited repair/rearm.
 
 ## Prototype 3: PvP Foundation

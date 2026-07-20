@@ -268,6 +268,7 @@ func get_telemetry() -> Dictionary:
 		"charge": charge,
 		"elevation": barrel_elevation,
 		"azimuth": rad_to_deg(turret_yaw),
+		"heading": rad_to_deg(rotation.y),
 		"stability": stability,
 		"deployed": deployed,
 		"view": "COCKPIT" if cockpit_view else "CHASE",
