@@ -1,1 +1,7 @@
 tools/godot-4.6.3-standard/Godot_v4.6.3-stable_linux.x86_64
+
+# Godot-specific ignores
+.godot/
+*.uid
+.import/
+export_preset.cfg
