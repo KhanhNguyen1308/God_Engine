@@ -106,8 +106,7 @@ func _draw_fire_control() -> void:
 
 	_draw_compass(_fire_control, viewport_size, heading, desired_bearing, actual_bearing, color, amber, blue, muted)
 	var spread: float = lerp(58.0, 18.0, stability)
-	var aim_offset: Vector2 = telemetry.get("aim_screen_offset", Vector2.ZERO)
-	_draw_fire_control_reticle(_fire_control, center, aim_offset, spread, heading, desired_bearing, actual_bearing, actual_el, desired_el, color, muted, amber, blue)
+	_draw_fire_control_reticle(_fire_control, center, spread, heading, desired_bearing, actual_bearing, actual_el, desired_el, color, muted, amber, blue)
 	_draw_range_ladder(_fire_control, center + Vector2(92, -92), range_set, color, muted)
 	_draw_lead_scale(_fire_control, center + Vector2(0, 72), color, muted)
 	_draw_traverse_arc(_fire_control, center + Vector2(0, 122), arc_limit, desired_az, actual_az, color, amber, warning)
@@ -154,27 +153,20 @@ func _draw_bearing_marker(target: Control, center_x: float, y: float, width: flo
 	target.draw_line(Vector2(x, y - 22.0), Vector2(x, y + 22.0), color, 2.0)
 	target.draw_string(ThemeDB.fallback_font, Vector2(x - 8.0, y - 28.0), label, HORIZONTAL_ALIGNMENT_CENTER, 16.0, 11, color)
 
-func _draw_fire_control_reticle(target: Control, center: Vector2, aim_offset: Vector2, spread: float, heading: float, desired_bearing: float, actual_bearing: float, actual_el: float, desired_el: float, color: Color, muted: Color, amber: Color, blue: Color) -> void:
-	# Mouse aim cursor moves on screen; the weapon marker lags behind that cursor.
-	var aim_pos := center + aim_offset
-	_draw_reference_cross(target, center, muted)
-	_draw_crosshair(target, aim_pos, spread, amber, muted)
+func _draw_fire_control_reticle(target: Control, center: Vector2, spread: float, heading: float, desired_bearing: float, actual_bearing: float, actual_el: float, desired_el: float, color: Color, muted: Color, amber: Color, blue: Color) -> void:
+	# The reticle is the weapon sight. Mouse input changes desired gun angles; the blue lag cue shows actual gun catch-up.
+	_draw_crosshair(target, center, spread, amber, muted)
 	var px_per_azimuth_degree := 5.0
 	var px_per_elevation_degree := 4.8
-	var gun_x: float = clamp(_angle_delta(actual_bearing, desired_bearing) * px_per_azimuth_degree, -170.0, 170.0)
-	var gun_y: float = clamp(-(actual_el - desired_el) * px_per_elevation_degree, -130.0, 130.0)
-	var gun_pos := aim_pos + Vector2(gun_x, gun_y)
-	var hull_offset: float = clamp(_angle_delta(heading, desired_bearing) * px_per_azimuth_degree, -170.0, 170.0)
-	target.draw_line(aim_pos, gun_pos, blue * Color(1, 1, 1, 0.34), 1.2)
-	_draw_gun_marker(target, gun_pos, blue)
+	var lag_x: float = clamp(_angle_delta(actual_bearing, desired_bearing) * px_per_azimuth_degree, -135.0, 135.0)
+	var lag_y: float = clamp(-(actual_el - desired_el) * px_per_elevation_degree, -95.0, 95.0)
+	var lag_pos := center + Vector2(lag_x, lag_y)
+	var hull_offset: float = clamp(_angle_delta(heading, actual_bearing) * px_per_azimuth_degree, -170.0, 170.0)
+	target.draw_line(center, lag_pos, blue * Color(1, 1, 1, 0.28), 1.2)
+	_draw_gun_marker(target, lag_pos, blue)
 	_draw_hull_marker(target, center + Vector2(hull_offset, 50.0), color)
-	target.draw_string(ThemeDB.fallback_font, aim_pos + Vector2(14.0, -12.0), "AIM", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, amber)
-	target.draw_string(ThemeDB.fallback_font, gun_pos + Vector2(13.0, -6.0), "GUN", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, blue * Color(1, 1, 1, 0.72))
-
-func _draw_reference_cross(target: Control, center: Vector2, color: Color) -> void:
-	target.draw_line(center + Vector2(-8, 0), center + Vector2(8, 0), color, 1.0)
-	target.draw_line(center + Vector2(0, -8), center + Vector2(0, 8), color, 1.0)
-	target.draw_circle(center, 1.5, color)
+	target.draw_string(ThemeDB.fallback_font, center + Vector2(14.0, -12.0), "SIGHT", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, amber)
+	target.draw_string(ThemeDB.fallback_font, lag_pos + Vector2(13.0, -6.0), "LAG", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, blue * Color(1, 1, 1, 0.72))
 
 func _draw_crosshair(target: Control, center: Vector2, spread: float, color: Color, muted: Color) -> void:
 	target.draw_line(center + Vector2(-spread, 0), center + Vector2(-12, 0), color, 2)
@@ -183,13 +175,6 @@ func _draw_crosshair(target: Control, center: Vector2, spread: float, color: Col
 	target.draw_line(center + Vector2(0, 12), center + Vector2(0, spread), color, 2)
 	target.draw_arc(center, spread, 0, TAU, 96, muted, 1.2)
 	target.draw_circle(center, 2.5, color)
-
-func _draw_aim_marker(target: Control, pos: Vector2, color: Color, label: String) -> void:
-	target.draw_line(pos + Vector2(-16, 0), pos + Vector2(-5, 0), color, 1.6)
-	target.draw_line(pos + Vector2(5, 0), pos + Vector2(16, 0), color, 1.6)
-	target.draw_line(pos + Vector2(0, -11), pos + Vector2(0, -4), color, 1.6)
-	target.draw_line(pos + Vector2(0, 4), pos + Vector2(0, 11), color, 1.6)
-	target.draw_string(ThemeDB.fallback_font, pos + Vector2(10, -8), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, color)
 
 func _draw_gun_marker(target: Control, pos: Vector2, color: Color) -> void:
 	target.draw_arc(pos, 10.0, 0.0, TAU, 36, color, 1.6)

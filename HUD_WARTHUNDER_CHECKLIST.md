@@ -110,21 +110,27 @@ Muc tieu: bien HUD prototype thanh HUD dieu khien Knight theo tinh than War Thun
 - [x] `tests/smoke_test.gd`: added bearing convention validation.
 - [ ] Still needs visual playtest screenshot pass: confirm HUD readability and radar/sonar feel in an actual rendered viewport, not only headless.
 
-## Completed aim-sight fix - 2026-07-20
+## Superseded aim-sight fix - 2026-07-20
+
+These entries were superseded by `Completed aiming reset - 2026-07-20`.
 
 - [x] Fixed HUD aim marker only moving horizontally: desired aim now offsets by azimuth and elevation delta.
 - [x] Added `aim_sight` input action on RMB, with hold-to-sight camera zoom.
 - [x] Added smoke-test regression for mouse vertical aim and sight activation/release.
 - [ ] Still needs human visual playtest: confirm the sight feels like War Thunder tank aiming at real framerate.
 
-## Completed aim model correction - 2026-07-20
+## Superseded aim model correction - 2026-07-20
+
+These entries were superseded by `Completed aiming reset - 2026-07-20`.
 
 - [x] Replaced bad floating-aim HUD model with War Thunder-style mouse aim: screen center is commanded aim, gun marker lags behind.
 - [x] Replaced RMB cockpit zoom with a dedicated gun sight camera that follows desired yaw/elevation.
 - [x] Smoke test now asserts dedicated sight camera activation and desired yaw/elevation tracking.
 - [ ] Needs real viewport playtest for feel: camera pitch sign, sensitivity, and marker scale may still need tuning.
 
-## Completed reticle offset correction - 2026-07-20
+## Superseded reticle offset correction - 2026-07-20
+
+These entries were superseded by `Completed aiming reset - 2026-07-20`.
 
 - [x] `AIM` reticle no longer stays at screen center; mouse motion moves it within a clamped screen box.
 - [x] `GUN` marker now lags relative to the moving `AIM` reticle.
@@ -138,3 +144,11 @@ Muc tieu: bien HUD prototype thanh HUD dieu khien Knight theo tinh than War Thun
 - [x] Projectile launch speed and range/elevation calculation now share `_muzzle_speed_for_charge()`.
 - [x] Smoke test asserts range dial increases desired elevation and visible barrel pitch follows barrel elevation.
 - [ ] Needs visual playtest: confirm elevation movement is obvious enough from chase and gun-sight views.
+
+## Completed aiming reset - 2026-07-20
+
+- [x] Removed the wrong `aim_screen_offset` floating-reticle model.
+- [x] Mouse now directly changes desired turret yaw and desired barrel elevation only.
+- [x] RMB gun sight camera follows actual turret/barrel angles, not desired aim.
+- [x] Q/E range zeroing now adds ballistic elevation delta without replacing manual mouse elevation.
+- [x] HUD reticle simplified to sight center plus a small actual/desired lag cue.

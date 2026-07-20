@@ -29,16 +29,14 @@ func _run() -> void:
 	player._input(mouse_event)
 	_check(player.desired_turret_yaw != mouse_start_yaw, "mouse motion changes desired turret yaw")
 	_check(player.desired_elevation > mouse_start_elevation, "mouse motion up raises desired elevation")
-	_check(player.aim_screen_offset.x != 0.0 and player.aim_screen_offset.y != 0.0, "mouse motion moves aim reticle away from screen center")
-	_check(player.get_telemetry().get("aim_screen_offset", Vector2.ZERO) == player.aim_screen_offset, "telemetry exposes aim reticle screen offset")
 	var sight_press := InputEventAction.new()
 	sight_press.action = "aim_sight"
 	sight_press.pressed = true
 	player._input(sight_press)
 	_check(player.gun_sight_active, "right mouse aim sight activates gun sight")
 	_check(player._gun_sight_camera.current, "gun sight uses dedicated sight camera")
-	_check(abs(player._gun_sight_camera.rotation.y - player.desired_turret_yaw) < 0.01, "gun sight camera follows desired yaw")
-	_check(abs(player._gun_sight_camera.rotation.x - deg_to_rad(player.desired_elevation)) < 0.01, "gun sight camera follows desired elevation")
+	_check(abs(player._gun_sight_camera.rotation.y - player.turret_yaw) < 0.01, "gun sight camera follows actual turret yaw")
+	_check(abs(player._gun_sight_camera.rotation.x - deg_to_rad(player.barrel_elevation)) < 0.01, "gun sight camera follows actual barrel elevation")
 	var sight_release := InputEventAction.new()
 	sight_release.action = "aim_sight"
 	sight_release.pressed = false
@@ -50,11 +48,14 @@ func _run() -> void:
 	player.charge = 3
 	player._sync_elevation_to_range()
 	player.barrel_elevation = player.desired_elevation
+	player.desired_elevation += 4.0
+	var manual_elevation_before_zeroing: float = player.desired_elevation
 	var start_range: float = player.desired_range
-	var ranged_elevation_start: float = player.desired_elevation
+	var old_solution: float = player._elevation_for_range(player.desired_range, player.charge)
 	player._adjust_range(1)
+	var new_solution: float = player._elevation_for_range(player.desired_range, player.charge)
 	_check(player.desired_range > start_range, "range adjust increases range set")
-	_check(player.desired_elevation > ranged_elevation_start, "range dial increases desired elevation")
+	_check(abs(player.desired_elevation - (manual_elevation_before_zeroing + new_solution - old_solution)) < 0.1, "range zeroing adds ballistic delta without replacing mouse aim")
 	var start_elevation: float = player.barrel_elevation
 	player._handle_aim(0.5)
 	_check(player.barrel_elevation > start_elevation, "weapon barrel elevates toward range dial solution")
