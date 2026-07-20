@@ -123,3 +123,10 @@ Muc tieu: bien HUD prototype thanh HUD dieu khien Knight theo tinh than War Thun
 - [x] Replaced RMB cockpit zoom with a dedicated gun sight camera that follows desired yaw/elevation.
 - [x] Smoke test now asserts dedicated sight camera activation and desired yaw/elevation tracking.
 - [ ] Needs real viewport playtest for feel: camera pitch sign, sensitivity, and marker scale may still need tuning.
+
+## Completed reticle offset correction - 2026-07-20
+
+- [x] `AIM` reticle no longer stays at screen center; mouse motion moves it within a clamped screen box.
+- [x] `GUN` marker now lags relative to the moving `AIM` reticle.
+- [x] Telemetry exposes `aim_screen_offset` and smoke test asserts it moves after mouse input.
+- [ ] Needs real viewport tuning: reticle box size, sensitivity, and whether RMB should recentre or keep offset.

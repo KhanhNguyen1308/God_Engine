@@ -40,6 +40,8 @@ var aim_sensitivity := 0.0032
 var stability := 0.45
 var cockpit_view := false
 var gun_sight_active := false
+var aim_screen_offset := Vector2.ZERO
+var aim_screen_limit := Vector2(260.0, 160.0)
 var radar_error := 20.0
 var last_contacts: Array = []
 var last_sonar_contacts: Array = []
@@ -79,6 +81,8 @@ func _ready() -> void:
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		var motion := event as InputEventMouseMotion
+		aim_screen_offset.x = clamp(aim_screen_offset.x + motion.relative.x, -aim_screen_limit.x, aim_screen_limit.x)
+		aim_screen_offset.y = clamp(aim_screen_offset.y + motion.relative.y, -aim_screen_limit.y, aim_screen_limit.y)
 		desired_turret_yaw = clamp(desired_turret_yaw - motion.relative.x * aim_sensitivity, deg_to_rad(-main_traverse_limit), deg_to_rad(main_traverse_limit))
 		desired_elevation = clamp(desired_elevation - motion.relative.y * aim_sensitivity * 9.0, main_elevation_min, main_elevation_max)
 	if event.is_action_pressed("aim_sight"):
@@ -315,6 +319,8 @@ func get_telemetry() -> Dictionary:
 		"deployed": deployed,
 		"view": "GUN SIGHT" if gun_sight_active else ("COCKPIT" if cockpit_view else "CHASE"),
 		"gun_sight": gun_sight_active,
+		"aim_screen_offset": aim_screen_offset,
+		"aim_screen_limit": aim_screen_limit,
 		"health": health,
 		"heat": heat,
 		"wear": barrel_wear,

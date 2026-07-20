@@ -1,8 +1,8 @@
 63f7b34db8d8cdea90c76aacccf841ec
 ::res://::1784556266
-HUD_WARTHUNDER_CHECKLIST.md::TextFile::-1::1784557269::0::1::::<><><>0<>0<><>::
+HUD_WARTHUNDER_CHECKLIST.md::TextFile::-1::1784557655::0::1::::<><><>0<>0<><>::
 icon.svg::CompressedTexture2D::2419047136742848414::1784480637::1784517959::1::::<><><>0<>0<>5b09d2f03bbad2da83396abe266269d3<>res://.godot/imported/icon.svg-218a8f2b3041327d8a5756f3a245f83b.ctex::
-ROADMAP.md::TextFile::-1::1784557269::0::1::::<><><>0<>0<><>::
+ROADMAP.md::TextFile::-1::1784557655::0::1::::<><><>0<>0<><>::
 warthunder_hud.md::TextFile::-1::1784556051::0::1::::<><><>0<>0<><>::
 ::res://scenes/::1784480637
 main.tscn::PackedScene::-1::1784480637::0::1::::<><><>0<>0<><>::res://scripts/Main.gd
@@ -11,11 +11,11 @@ ArtilleryShell.gd::GDScript::7113508109241164749::1784517980::0::1::::ArtilleryS
 BaseZone.gd::GDScript::2348817472853753965::1784518022::0::1::::BaseZone<>Area3D<><>0<>0<><>::
 DamageableTarget.gd::GDScript::3910566539270091405::1784518433::0::1::::DamageableTarget<>Node3D<><>0<>0<><>::
 EnemyKnightAI.gd::GDScript::4645514570160106841::1784518451::0::1::::EnemyKnightAI<>DamageableTarget<><>0<>0<><>::
-KnightController.gd::GDScript::3602389947929194130::1784557541::0::1::::KnightController<>CharacterBody3D<><>0<>0<><>::
+KnightController.gd::GDScript::3602389947929194130::1784557965::0::1::::KnightController<>CharacterBody3D<><>0<>0<><>::
 Main.gd::GDScript::3176950629699701281::1784556012::0::1::::<>Node3D<><>0<>0<><>::
-PrototypeHUD.gd::GDScript::2753262224540958057::1784557582::0::1::::PrototypeHUD<>CanvasLayer<><>0<>0<><>::
+PrototypeHUD.gd::GDScript::2753262224540958057::1784558002::0::1::::PrototypeHUD<>CanvasLayer<><>0<>0<><>::
 SensorScope.gd::GDScript::937107157881892987::1784556730::0::1::::SensorScope<>Control<><>0<>0<><>::
 ::res://tests/::1784518304
-smoke_test.gd::GDScript::6190481832388630978::1784557598::0::1::::<>SceneTree<><>0<>0<><>::
+smoke_test.gd::GDScript::6190481832388630978::1784558019::0::1::::<>SceneTree<><>0<>0<><>::
 ::res://tools/::1784517915
 ::res://tools/godot-4.6.3-standard/::1784517915

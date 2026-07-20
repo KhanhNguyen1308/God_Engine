@@ -29,6 +29,8 @@ func _run() -> void:
 	player._input(mouse_event)
 	_check(player.desired_turret_yaw != mouse_start_yaw, "mouse motion changes desired turret yaw")
 	_check(player.desired_elevation > mouse_start_elevation, "mouse motion up raises desired elevation")
+	_check(player.aim_screen_offset.x != 0.0 and player.aim_screen_offset.y != 0.0, "mouse motion moves aim reticle away from screen center")
+	_check(player.get_telemetry().get("aim_screen_offset", Vector2.ZERO) == player.aim_screen_offset, "telemetry exposes aim reticle screen offset")
 	var sight_press := InputEventAction.new()
 	sight_press.action = "aim_sight"
 	sight_press.pressed = true
