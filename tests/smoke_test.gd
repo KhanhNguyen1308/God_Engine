@@ -22,6 +22,24 @@ func _run() -> void:
 	_check(abs(player._bearing_from_direction(Vector3(-1.0, 0.0, 0.0)) + 90.0) < 0.1, "bearing left is negative")
 	_check(abs(abs(player._bearing_from_direction(Vector3(0.0, 0.0, 1.0))) - 180.0) < 0.1, "bearing rear is 180")
 
+	var mouse_start_yaw: float = player.desired_turret_yaw
+	var mouse_start_elevation: float = player.desired_elevation
+	var mouse_event := InputEventMouseMotion.new()
+	mouse_event.relative = Vector2(24.0, -18.0)
+	player._input(mouse_event)
+	_check(player.desired_turret_yaw != mouse_start_yaw, "mouse motion changes desired turret yaw")
+	_check(player.desired_elevation > mouse_start_elevation, "mouse motion up raises desired elevation")
+	var sight_press := InputEventAction.new()
+	sight_press.action = "aim_sight"
+	sight_press.pressed = true
+	player._input(sight_press)
+	_check(player.gun_sight_active, "right mouse aim sight activates gun sight")
+	var sight_release := InputEventAction.new()
+	sight_release.action = "aim_sight"
+	sight_release.pressed = false
+	player._input(sight_release)
+	_check(not player.gun_sight_active, "aim sight releases back to normal camera")
+
 	var start_ammo: int = player.ammo
 	var start_range: float = player.desired_range
 	player._adjust_range(1)

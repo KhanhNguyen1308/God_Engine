@@ -96,6 +96,8 @@ func _draw_fire_control() -> void:
 	var heading: float = float(telemetry.get("heading", 0.0))
 	var desired_bearing: float = float(telemetry.get("desired_world_bearing", heading + desired_az))
 	var actual_bearing: float = float(telemetry.get("actual_world_bearing", heading + actual_az))
+	var actual_el: float = float(telemetry.get("elevation", 0.0))
+	var desired_el: float = float(telemetry.get("desired_elevation", actual_el))
 	var color := Color(0.62, 0.95, 0.66, 0.88)
 	var muted := Color(0.62, 0.95, 0.66, 0.28)
 	var amber := Color(1.0, 0.74, 0.34, 0.92)
@@ -104,12 +106,14 @@ func _draw_fire_control() -> void:
 
 	_draw_compass(_fire_control, viewport_size, heading, desired_bearing, actual_bearing, color, amber, blue, muted)
 	var spread: float = lerp(58.0, 18.0, stability)
-	_draw_fire_control_reticle(_fire_control, center, spread, heading, desired_bearing, actual_bearing, color, muted, amber, blue)
+	_draw_fire_control_reticle(_fire_control, center, spread, heading, desired_bearing, actual_bearing, actual_el, desired_el, color, muted, amber, blue)
 	_draw_range_ladder(_fire_control, center + Vector2(92, -92), range_set, color, muted)
 	_draw_lead_scale(_fire_control, center + Vector2(0, 72), color, muted)
 	_draw_traverse_arc(_fire_control, center + Vector2(0, 122), arc_limit, desired_az, actual_az, color, amber, warning)
 	_fire_control.draw_string(ThemeDB.fallback_font, center + Vector2(-66, -78), "RNG %04dm" % int(range_set), HORIZONTAL_ALIGNMENT_LEFT, -1, 20, color)
-	_fire_control.draw_string(ThemeDB.fallback_font, center + Vector2(-72, -51), "EL %.1f/%.1f" % [float(telemetry.get("elevation", 0.0)), float(telemetry.get("desired_elevation", 0.0))], HORIZONTAL_ALIGNMENT_LEFT, -1, 14, muted)
+	_fire_control.draw_string(ThemeDB.fallback_font, center + Vector2(-72, -51), "EL %.1f/%.1f" % [actual_el, desired_el], HORIZONTAL_ALIGNMENT_LEFT, -1, 14, muted)
+	if bool(telemetry.get("gun_sight", false)):
+		_fire_control.draw_string(ThemeDB.fallback_font, center + Vector2(-54, -108), "GUN SIGHT", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, amber)
 	if abs(desired_az) >= arc_limit - 1.5:
 		_fire_control.draw_string(ThemeDB.fallback_font, center + Vector2(-68, 154), "HARDPOINT LIMIT", HORIZONTAL_ALIGNMENT_LEFT, -1, 15, warning)
 
@@ -149,13 +153,17 @@ func _draw_bearing_marker(target: Control, center_x: float, y: float, width: flo
 	target.draw_line(Vector2(x, y - 22.0), Vector2(x, y + 22.0), color, 2.0)
 	target.draw_string(ThemeDB.fallback_font, Vector2(x - 8.0, y - 28.0), label, HORIZONTAL_ALIGNMENT_CENTER, 16.0, 11, color)
 
-func _draw_fire_control_reticle(target: Control, center: Vector2, spread: float, heading: float, desired_bearing: float, actual_bearing: float, color: Color, muted: Color, amber: Color, blue: Color) -> void:
+func _draw_fire_control_reticle(target: Control, center: Vector2, spread: float, heading: float, desired_bearing: float, actual_bearing: float, actual_el: float, desired_el: float, color: Color, muted: Color, amber: Color, blue: Color) -> void:
 	_draw_crosshair(target, center, spread, blue, muted)
-	var px_per_degree := 5.0
-	var desired_offset: float = clamp(_angle_delta(desired_bearing, actual_bearing) * px_per_degree, -170.0, 170.0)
-	var hull_offset: float = clamp(_angle_delta(heading, actual_bearing) * px_per_degree, -170.0, 170.0)
-	_draw_aim_marker(target, center + Vector2(desired_offset, -24.0), amber, "DES")
-	_draw_hull_marker(target, center + Vector2(hull_offset, 36.0), color)
+	var px_per_azimuth_degree := 5.0
+	var px_per_elevation_degree := 4.8
+	var desired_x: float = clamp(_angle_delta(desired_bearing, actual_bearing) * px_per_azimuth_degree, -170.0, 170.0)
+	var desired_y: float = clamp(-(desired_el - actual_el) * px_per_elevation_degree, -130.0, 130.0)
+	var desired_pos := center + Vector2(desired_x, desired_y)
+	var hull_offset: float = clamp(_angle_delta(heading, actual_bearing) * px_per_azimuth_degree, -170.0, 170.0)
+	target.draw_line(center, desired_pos, amber * Color(1, 1, 1, 0.34), 1.2)
+	_draw_aim_marker(target, desired_pos, amber, "AIM")
+	_draw_hull_marker(target, center + Vector2(hull_offset, 42.0), color)
 	target.draw_string(ThemeDB.fallback_font, center + Vector2(-155.0, 116.0), "HULL", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, color * Color(1, 1, 1, 0.65))
 	target.draw_string(ThemeDB.fallback_font, center + Vector2(118.0, -22.0), "GUN", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, blue * Color(1, 1, 1, 0.72))
 
@@ -223,7 +231,8 @@ func _draw_weapon_strip() -> void:
 	_weapon_strip.draw_string(ThemeDB.fallback_font, Vector2(150, 24), "AMMO %02d" % int(telemetry.get("ammo", 0)), HORIZONTAL_ALIGNMENT_LEFT, -1, 15, gun_color)
 	_draw_strip_bar(Vector2(245, 15), 80, clamp(float(telemetry.get("heat", 0.0)) / 110.0, 0.0, 1.0), heat_color)
 	_weapon_strip.draw_string(ThemeDB.fallback_font, Vector2(338, 24), "HEAT", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, heat_color)
-	_weapon_strip.draw_string(ThemeDB.fallback_font, Vector2(16, 52), "Q/E RNG   Z/X CHG", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(0.65, 0.8, 0.62, 0.58))
+	var sight_text := "RMB SIGHT" if not bool(telemetry.get("gun_sight", false)) else "SIGHT ON"
+	_weapon_strip.draw_string(ThemeDB.fallback_font, Vector2(16, 52), "Q/E RNG   Z/X CHG   " + sight_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(0.65, 0.8, 0.62, 0.58))
 
 func _draw_strip_bar(pos: Vector2, width: float, ratio: float, color: Color) -> void:
 	_weapon_strip.draw_rect(Rect2(pos, Vector2(width, 8)), Color(0.08, 0.1, 0.08, 0.9), true)

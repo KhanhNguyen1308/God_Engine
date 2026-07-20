@@ -39,6 +39,7 @@ var main_elevation_max := 68.0
 var aim_sensitivity := 0.0032
 var stability := 0.45
 var cockpit_view := false
+var gun_sight_active := false
 var radar_error := 20.0
 var last_contacts: Array = []
 var last_sonar_contacts: Array = []
@@ -79,6 +80,12 @@ func _input(event: InputEvent) -> void:
 		var motion := event as InputEventMouseMotion
 		desired_turret_yaw = clamp(desired_turret_yaw - motion.relative.x * aim_sensitivity, deg_to_rad(-main_traverse_limit), deg_to_rad(main_traverse_limit))
 		desired_elevation = clamp(desired_elevation - motion.relative.y * aim_sensitivity * 9.0, main_elevation_min, main_elevation_max)
+	if event.is_action_pressed("aim_sight"):
+		gun_sight_active = true
+		_set_active_camera()
+	if event.is_action_released("aim_sight"):
+		gun_sight_active = false
+		_set_active_camera()
 	if event.is_action_pressed("toggle_view"):
 		cockpit_view = not cockpit_view
 		_set_active_camera()
@@ -305,7 +312,8 @@ func get_telemetry() -> Dictionary:
 		"desired_world_bearing": _wrap_degrees(heading_bearing + desired_azimuth),
 		"stability": stability,
 		"deployed": deployed,
-		"view": "COCKPIT" if cockpit_view else "CHASE",
+		"view": "GUN SIGHT" if gun_sight_active else ("COCKPIT" if cockpit_view else "CHASE"),
+		"gun_sight": gun_sight_active,
 		"health": health,
 		"heat": heat,
 		"wear": barrel_wear,
@@ -434,8 +442,10 @@ func _emit_telemetry() -> void:
 func _set_active_camera() -> void:
 	if not _third_camera or not _cockpit_camera:
 		return
-	_third_camera.current = not cockpit_view
-	_cockpit_camera.current = cockpit_view
+	_third_camera.current = not cockpit_view and not gun_sight_active
+	_cockpit_camera.current = cockpit_view or gun_sight_active
+	_cockpit_camera.fov = 34.0 if gun_sight_active else 62.0
+	_third_camera.fov = 58.0
 
 func _build_visual() -> void:
 	_body_visual = Node3D.new()

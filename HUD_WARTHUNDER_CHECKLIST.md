@@ -12,7 +12,7 @@ Muc tieu: bien HUD prototype thanh HUD dieu khien Knight theo tinh than War Thun
 
 ## Da co trong prototype
 
-- [x] Mouse aim cho vu khi: di chuyen chuot thay doi `desired_turret_yaw` va `desired_elevation`.
+- [x] Mouse aim cho vu khi: di chuyen chuot thay doi `desired_turret_yaw` va `desired_elevation`; HUD aim marker da chay ca ngang va doc.
 - [x] Thap phao/nong co do tre: `turret_yaw` va `barrel_elevation` di chuyen dan toi desired theo toc do gioi han.
 - [x] Gioi han goc hardpoint chinh: main gun bi clamp trong cung traverse hien tai.
 - [x] Chinh range thu cong bang phim Q/E, charge bang Z/X.
@@ -32,7 +32,7 @@ Muc tieu: bien HUD prototype thanh HUD dieu khien Knight theo tinh than War Thun
 - [ ] Module panel moi la outline don gian, chua co mau hu hong tung module nhu War Thunder.
 - [ ] Warning hien bang text nhieu hon icon/mau; can doi sang tin hieu goc man hinh/den canh bao.
 - [x] HUD layout da co tinh lai vi tri theo viewport cho module panel, weapon strip, message va sensor scope; van can polish tren nhieu do phan giai.
-- [ ] Chua co scope/zoom mode rieng nhu sniper sight hoac naval fire-control view.
+- [x] Da co gun sight hold bang RMB voi camera zoom/FOV rieng; van can polish scope view nhu War Thunder that.
 - [x] Da co top compass hien heading than robot, actual gun bearing, desired aim bearing va contact markers gan nhat.
 - [ ] Chua co minimap/objective/capture point layer.
 
@@ -59,7 +59,7 @@ Muc tieu: bien HUD prototype thanh HUD dieu khien Knight theo tinh than War Thun
 - [x] Viet test/validation nho cho quy uoc bearing: 0 do = phia truoc robot, +90 = ben phai, -90 = ben trai.
 - [x] Sua telemetry heading theo vector forward that cua robot va them nhan huong radar/sonar; can visual playtest them o 0/90/180 do.
 - [x] Them top compass: heading than robot, turret/actual gun bearing, desired aim bearing, contact bearing. Objective marker chua co.
-- [x] Doi reticle thanh 3 marker rieng: hull forward, desired aim, actual gun aim.
+- [x] Doi reticle thanh 3 marker rieng: hull forward, desired aim, actual gun aim; desired aim chay ca X/Y theo mouse aim.
 - [x] Hien arc gioi han hardpoint tren HUD bang cung trai/phai, doi mau khi chuot vuot gioi han.
 
 ### Phase 2 - Fire-control War Thunder Naval
@@ -109,3 +109,10 @@ Muc tieu: bien HUD prototype thanh HUD dieu khien Knight theo tinh than War Thun
 - [x] `SensorScope.gd`: added FWD/L/R labels to radar and sonar displays.
 - [x] `tests/smoke_test.gd`: added bearing convention validation.
 - [ ] Still needs visual playtest screenshot pass: confirm HUD readability and radar/sonar feel in an actual rendered viewport, not only headless.
+
+## Completed aim-sight fix - 2026-07-20
+
+- [x] Fixed HUD aim marker only moving horizontally: desired aim now offsets by azimuth and elevation delta.
+- [x] Added `aim_sight` input action on RMB, with hold-to-sight camera zoom.
+- [x] Added smoke-test regression for mouse vertical aim and sight activation/release.
+- [ ] Still needs human visual playtest: confirm the sight feels like War Thunder tank aiming at real framerate.
