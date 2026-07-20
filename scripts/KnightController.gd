@@ -28,6 +28,14 @@ var jam_timer := 0.0
 var melee_cooldown := 0.0
 var turret_yaw := 0.0
 var barrel_elevation := 32.0
+var desired_turret_yaw := 0.0
+var desired_range := 650.0
+var range_step_fine := 50.0
+var range_step_coarse := 200.0
+var main_traverse_limit := 82.0
+var main_elevation_min := 0.0
+var main_elevation_max := 68.0
+var aim_sensitivity := 0.0032
 var stability := 0.45
 var cockpit_view := false
 var radar_error := 20.0
@@ -63,6 +71,10 @@ func _ready() -> void:
 	_set_active_camera()
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventMouseMotion:
+		var motion := event as InputEventMouseMotion
+		desired_turret_yaw = clamp(desired_turret_yaw - motion.relative.x * aim_sensitivity, deg_to_rad(-main_traverse_limit), deg_to_rad(main_traverse_limit))
+		desired_range = clamp(desired_range - motion.relative.y * 2.5, 100.0, 2200.0)
 	if event.is_action_pressed("toggle_view"):
 		cockpit_view = not cockpit_view
 		_set_active_camera()
@@ -72,6 +84,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		charge = clampi(charge + 1, 1, 5)
 	if event.is_action_pressed("charge_down"):
 		charge = clampi(charge - 1, 1, 5)
+	if event.is_action_pressed("range_up"):
+		_adjust_range(1)
+	if event.is_action_pressed("range_down"):
+		_adjust_range(-1)
 	if event.is_action_pressed("shield_toggle"):
 		shield_on = not shield_on
 	if event.is_action_pressed("melee"):
@@ -112,7 +128,8 @@ func fire_main_gun() -> void:
 	var muzzle := _barrel.global_transform.origin + -_barrel.global_transform.basis.z * 6.5
 	var speed := 58.0 + float(charge) * 20.0
 	var direction := -_barrel.global_transform.basis.z.normalized()
-	var inaccuracy := (1.0 - stability) * (0.045 if deployed else 0.09)
+	var alignment_error: float = abs(_angle_delta_rad(desired_turret_yaw, turret_yaw))
+	var inaccuracy := (1.0 - stability) * (0.045 if deployed else 0.09) + alignment_error * 0.035
 	direction = (direction + Vector3(randf_range(-inaccuracy, inaccuracy), randf_range(-inaccuracy, inaccuracy), randf_range(-inaccuracy, inaccuracy))).normalized()
 	shell.damage = 45.0 + float(charge) * 12.0
 	shell.blast_radius = 7.0 + float(charge) * 1.5
@@ -268,6 +285,10 @@ func get_telemetry() -> Dictionary:
 		"charge": charge,
 		"elevation": barrel_elevation,
 		"azimuth": rad_to_deg(turret_yaw),
+		"desired_azimuth": rad_to_deg(desired_turret_yaw),
+		"range_set": desired_range,
+		"arc_limit": main_traverse_limit,
+		"gun_aligned": abs(_angle_delta_rad(desired_turret_yaw, turret_yaw)) < deg_to_rad(1.2),
 		"heading": rad_to_deg(rotation.y),
 		"stability": stability,
 		"deployed": deployed,
@@ -304,13 +325,35 @@ func _handle_movement(delta: float) -> void:
 		energy = max(energy - 18.0 * delta, 0.0)
 
 func _handle_aim(delta: float) -> void:
-	var weapon_factor: float = module_state["weapon"]
+	desired_turret_yaw = clamp(desired_turret_yaw, deg_to_rad(-main_traverse_limit), deg_to_rad(main_traverse_limit))
+	desired_range = clamp(desired_range, 100.0, 2200.0)
+	var weapon_factor: float = clamp(module_state["weapon"], 0.2, 1.0)
 	var yaw_input := Input.get_action_strength("aim_right") - Input.get_action_strength("aim_left")
-	var elev_input := Input.get_action_strength("aim_up") - Input.get_action_strength("aim_down")
-	turret_yaw += yaw_input * delta * 0.75 * clamp(weapon_factor, 0.2, 1.0)
-	barrel_elevation = clamp(barrel_elevation + elev_input * delta * 24.0 * clamp(weapon_factor, 0.2, 1.0), 0.0, 68.0)
+	var range_input := Input.get_action_strength("aim_up") - Input.get_action_strength("aim_down")
+	if abs(yaw_input) > 0.01:
+		desired_turret_yaw = clamp(desired_turret_yaw + yaw_input * delta * 0.85, deg_to_rad(-main_traverse_limit), deg_to_rad(main_traverse_limit))
+	if abs(range_input) > 0.01:
+		desired_range = clamp(desired_range + range_input * delta * 220.0, 100.0, 2200.0)
+	var desired_elevation := _elevation_for_range(desired_range, charge)
+	turret_yaw = lerp_angle(turret_yaw, desired_turret_yaw, clamp(delta * 2.4 * weapon_factor, 0.0, 1.0))
+	barrel_elevation = move_toward(barrel_elevation, desired_elevation, delta * 22.0 * weapon_factor)
 	_turret.rotation.y = turret_yaw
 	_barrel.rotation.x = deg_to_rad(barrel_elevation)
+
+
+func _adjust_range(direction: int) -> void:
+	var step: float = range_step_coarse if Input.is_action_pressed("boost") else range_step_fine
+	desired_range = clamp(desired_range + float(direction) * step, 100.0, 2200.0)
+
+func _elevation_for_range(range_meters: float, charge_level: int) -> float:
+	var muzzle_speed: float = 58.0 + float(charge_level) * 20.0
+	var shell_gravity: float = 24.0
+	var ratio: float = clamp(shell_gravity * range_meters / max(muzzle_speed * muzzle_speed, 1.0), -0.98, 0.98)
+	var low_arc: float = 0.5 * asin(ratio)
+	return clamp(rad_to_deg(low_arc), main_elevation_min, main_elevation_max)
+
+func _angle_delta_rad(a: float, b: float) -> float:
+	return wrapf(a - b, -PI, PI)
 
 func _update_energy(delta: float) -> void:
 	var shield_drain := 3.5 if shield_on else 0.0

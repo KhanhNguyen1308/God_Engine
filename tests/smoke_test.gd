@@ -19,6 +19,12 @@ func _run() -> void:
 	_check(get_nodes_in_group("radar_contact").size() >= 3, "radar contacts spawned")
 
 	var start_ammo: int = player.ammo
+	var start_range: float = player.desired_range
+	player._adjust_range(1)
+	_check(player.desired_range > start_range, "range adjust increases range set")
+	player.desired_turret_yaw = deg_to_rad(player.main_traverse_limit + 50.0)
+	player._handle_aim(0.1)
+	_check(abs(rad_to_deg(player.desired_turret_yaw)) <= player.main_traverse_limit, "hardpoint clamps desired aim")
 	player.pulse_radar(true)
 	_check(player.last_contacts.size() >= 3, "radar sees targets")
 	player.sonar_focus = false
